@@ -1,8 +1,7 @@
 const express = require('express');
-const path = require('path');
 
-const productsRouter = require('./routers/products.router');
-const cartsRouter = require('./routers/carts.router');
+const productsRouter = require('./routes/products.route');
+const cartsRouter = require('./routes/carts.route');
 
 const app = express();
 app.use(express.json());
@@ -12,5 +11,5 @@ app.use('/api/carts', cartsRouter);
 
 const PORT = 8080;
 app.listen(PORT, () => {
-console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    console.log('Servidor corriendo en el puerto', PORT);
 });

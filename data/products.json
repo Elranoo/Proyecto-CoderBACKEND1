@@ -1,5 +1,5 @@
 [
-    {
+  {
     "id": 1,
     "title": "Zapatillas",
     "description": "Calzado deportivo",
@@ -8,6 +8,21 @@
     "status": true,
     "stock": 25,
     "category": "calzado",
-    "thumbnails": ["zapa1.png"]
-    }
+    "thumbnails": [
+      "zapa1.png"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "Camiseta",
+    "description": "Camiseta verde",
+    "code": "CMVR1",
+    "price": 3750,
+    "status": true,
+    "stock": 7,
+    "category": "vestimenta",
+    "thumbnails": [
+      "camiseta1.png"
+    ]
+  }
 ]

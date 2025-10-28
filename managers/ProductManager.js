@@ -1,88 +1,89 @@
 const fs = require('fs').promises;
 const path = require('path');
 
-class ProductManager {
-    constructor(filename = 'data/products.json') {
-    this.path = path.resolve(filename);
-}
-
-async _readFile() {
-    try {
-        const content = await fs.readFile(this.path, 'utf8');
-        return JSON.parse(content || '[]');
-    } catch (err) {
-    if (err.code === 'ENOENT') {
-        await this._writeFile([]);
-        return [];
+class GestorProductos {
+    constructor(archivo = 'data/products.json') {
+        this.path = path.resolve(archivo);
     }
-    throw err;
+
+    async _leerArchivo() {
+        try {
+            const contenido = await fs.readFile(this.path, 'utf8');
+            return JSON.parse(contenido || '[]');
+        } catch (err) {
+            if (err.code === 'ENOENT') {
+                await this._escribirArchivo([]);
+                return [];
+            }
+            throw err;
+        }
+    }
+
+    async _escribirArchivo(datos) {
+        await fs.mkdir(path.dirname(this.path), { recursive: true });
+        await fs.writeFile(this.path, JSON.stringify(datos, null, 2), 'utf8');
+    }
+
+    async obtenerTodos() {
+        return await this._leerArchivo();
+    }
+
+    async obtenerPorId(id) {
+        const items = await this._leerArchivo();
+        return items.find(p => String(p.id) === String(id)) || null;
+    }
+
+    async _generarId(items) {
+        const max = items.reduce((acc, it) => {
+            const num = Number(it.id);
+            return Number.isFinite(num) ? Math.max(acc, num) : acc;
+        }, 0);
+        return max + 1;
+    }
+
+    async agregarProducto(data) {
+        const items = await this._leerArchivo();
+        const id = await this._generarId(items);
+        const nuevoProducto = {
+            id,
+            title: data.title || '',
+            description: data.description || '',
+            code: data.code || '',
+            price: Number(data.price) || 0,
+            status: data.status === undefined ? true : Boolean(data.status),
+            stock: Number(data.stock) || 0,
+            category: data.category || '',
+            thumbnails: Array.isArray(data.thumbnails) ? data.thumbnails : []
+        };
+        items.push(nuevoProducto);
+        await this._escribirArchivo(items);
+        return nuevoProducto;
+    }
+
+    async actualizarProducto(id, campos) {
+        const items = await this._leerArchivo();
+        const idx = items.findIndex(p => String(p.id) === String(id));
+        if (idx === -1) return null;
+
+        const permitidos = ['title','description','code','price','status','stock','category','thumbnails'];
+        for (const key of permitidos) {
+            if (campos[key] !== undefined) {
+                items[idx][key] = key === 'price' || key === 'stock' ? Number(campos[key]) : campos[key];
+            }
+        }
+        await this._escribirArchivo(items);
+        return items[idx];
+    }
+
+    async eliminarProducto(id) {
+        const items = await this._leerArchivo();
+        const idx = items.findIndex(p => String(p.id) === String(id));
+        if (idx === -1) return false;
+        items.splice(idx, 1);
+        await this._escribirArchivo(items);
+        return true;
     }
 }
 
-async _writeFile(data) {
-    await fs.mkdir(path.dirname(this.path), { recursive: true });
-    await fs.writeFile(this.path, JSON.stringify(data, null, 2), 'utf8');
-}
+module.exports = GestorProductos;
 
-async getAll() {
-    return await this._readFile();
-}
-
-async getById(id) {
-    const items = await this._readFile();
-    return items.find(p => String(p.id) === String(id)) || null;
-}
-
-async _generateId(items) {
-    const max = items.reduce((acc, it) => {
-        const num = Number(it.id);
-        return Number.isFinite(num) ? Math.max(acc, num) : acc;
-    }, 0);
-    return max + 1;
-}
-
-async addProduct(productData) {
-    const items = await this._readFile();
-    const newId = await this._generateId(items);
-    const newProduct = {
-        id: newId,
-        title: productData.title || '',
-        description: productData.description || '',
-        code: productData.code || '',
-        price: Number(productData.price) || 0,
-        status: productData.status === undefined ? true : Boolean(productData.status),
-        stock: Number(productData.stock) || 0,
-        category: productData.category || '',
-        thumbnails: Array.isArray(productData.thumbnails) ? productData.thumbnails : []
-    };
-    items.push(newProduct);
-    await this._writeFile(items);
-    return newProduct;
-}
-
-async updateProduct(id, fields) {
-    const items = await this._readFile();
-    const idx = items.findIndex(p => String(p.id) === String(id));
-    if (idx === -1) return null;
-    // No se debe actualizar el id
-    const allowed = ['title','description','code','price','status','stock','category','thumbnails'];
-    for (const key of allowed) {
-        if (fields[key] !== undefined) {
-        items[idx][key] = key === 'price' || key === 'stock' ? Number(fields[key]) : fields[key];
-    }
-    }
-    await this._writeFile(items);
-    return items[idx];
-}
-
-async deleteProduct(id) {
-    const items = await this._readFile();
-    const idx = items.findIndex(p => String(p.id) === String(id));
-    if (idx === -1) return false;
-    items.splice(idx, 1);
-    await this._writeFile(items);
-    return true;
-}
-}
-
-module.exports = ProductManager;
