@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home - Lista de Productos</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <h1>Lista de Productos</h1>
+
+    <div id="productsContainer">
+        {{#each productos}}
+            <div class="product-card">
+                <p>ID: {{this.id}}</p>
+                <h3>{{this.title}}</h3>
+                <p>{{this.description}}</p>
+                <p>Código: {{this.code}}</p>
+                <p>Precio: ${{this.price}}</p>
+                <p>Stock: {{this.stock}}</p>
+                <p>Categoría: {{this.category}}</p>
+            </div>
+        {{/each}}
+    </div>
+</body>
+</html>

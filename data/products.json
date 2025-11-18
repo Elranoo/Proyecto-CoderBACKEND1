@@ -24,5 +24,27 @@
     "thumbnails": [
       "camiseta1.png"
     ]
+  },
+  {
+    "id": 3,
+    "title": "iPhone",
+    "description": "iPhone 17 Pro",
+    "code": "iP17pro",
+    "price": 1700,
+    "status": true,
+    "stock": 15,
+    "category": "tecnologia",
+    "thumbnails": []
+  },
+  {
+    "id": 4,
+    "title": "Televisor",
+    "description": "Tv \"75″ Samsung",
+    "code": "tv75s",
+    "price": 3500,
+    "status": true,
+    "stock": 7,
+    "category": "tecnologia",
+    "thumbnails": []
   }
 ]
