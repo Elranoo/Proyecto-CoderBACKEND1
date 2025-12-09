@@ -1,3 +1,11 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>{{producto.title}}</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
 <h1>{{producto.title}}</h1>
 <p>{{producto.description}}</p>
 <p>Precio: ${{producto.price}}</p>
@@ -6,20 +14,18 @@
 <button onclick="agregarAlCarrito('{{producto._id}}')">Agregar al carrito</button>
 
 <script>
-  const cartId = 'REEMPLAZAR_CON_TU_CARTID';
+  const cartId = '{{cartId}}';
 
   async function agregarAlCarrito(productId) {
     try {
       const res = await fetch(`/api/carts/${cartId}/products/${productId}`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) alert('Producto agregado al carrito');
-      else alert(data.mensaje || 'Error');
+      else alert(data.mensaje || 'Error al agregar');
     } catch (err) {
-      alert('Error al agregar producto');
+      alert('Error al agregar producto al carrito');
     }
   }
 </script>
-
-
-
-
+</body>
+</html>

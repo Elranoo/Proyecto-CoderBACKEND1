@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
 const { engine } = require('express-handlebars');
-require('dotenv').config();
 
 const productsRouter = require('./routes/products.route');
 const cartsRouter = require('./routes/carts.route');
@@ -11,22 +10,34 @@ const viewsRouter = require('./routes/views.route');
 
 const app = express();
 
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log('MongoDB conectado a Atlas'))
-  .catch(err => console.log('Error de conexión:', err));
+
+app.engine('handlebars', engine({
+  defaultLayout: false,
+  helpers: {
+    multiply: (a, b) => a * b,
+    calcularTotal: (productos) => {
+      return productos.reduce((acc, p) => acc + (p.product.price * p.quantity), 0);
+    }
+  }
+}));
+app.set('view engine', 'handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.engine('handlebars', engine({ defaultLayout: false }));
-app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'views'));
 
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 app.use('/', viewsRouter);
+
+
+console.log("MONGO_URL ->", process.env.MONGO_URL);
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log('MongoDB conectado a Atlas'))
+  .catch(err => console.log('Error de conexión a MongoDB:', err));
 
 
 const PORT = 8080;
