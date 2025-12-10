@@ -12,7 +12,7 @@ const productSchema = new mongoose.Schema({
   thumbnails: [String]
 });
 
-// Agregamos paginación
+
 productSchema.plugin(mongoosePaginate);
 
 module.exports = mongoose.model('products', productSchema);

@@ -1,44 +1,47 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Mi Carrito</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-<h1>Mi Carrito</h1>
+<div class="container">
+    <h1 class="title">Carrito</h1>
 
-{{#if productos.length}}
-  <div id="cartContainer">
-    {{#each productos}}
-      <div class="product-card">
-        <h3>{{this.product.title}}</h3>
-        <p>Cantidad: {{this.quantity}}</p>
-        <p>Precio unitario: ${{this.product.price}}</p>
-        <p>Subtotal: ${{multiply this.product.price this.quantity}}</p>
-        <button class="delete-btn" onclick="eliminarProducto('{{this.product._id}}')">Eliminar</button>
-      </div>
-    {{/each}}
+    {{#if cart.products.length}}
+    <div class="cart-grid">
+        {{#each cart.products}}
+        <div class="card cart-card">
+            <h3>{{this.product.title}}</h3>
+            <p><strong>Precio:</strong> ${{this.product.price}}</p>
+            <p><strong>Cantidad:</strong> {{this.quantity}}</p>
 
-    <h2>Total: ${{calcularTotal productos}}</h2>
-  </div>
-{{else}}
-  <p>El carrito está vacío.</p>
-{{/if}}
+            <button class="btn-red"
+                onclick="removeProduct('{{../cartId}}', '{{this.product._id}}')">
+                Eliminar
+            </button>
+        </div>
+        {{/each}}
+    </div>
+
+    <div class="total-box">
+        <h2>Total: ${{total}}</h2>
+        <button class="btn-red" onclick="emptyCart('{{cartId}}')">
+            Vaciar carrito
+        </button>
+    </div>
+
+    {{else}}
+    <p>El carrito está vacío.</p>
+    {{/if}}
+
+    <br>
+    <a href="/" class="page-btn">⬅ Seguir comprando</a>
+</div>
 
 <script>
-  const cartId = '{{_id}}';
-
-  async function eliminarProducto(productId) {
-    try {
-      const res = await fetch(`/api/carts/${cartId}/products/${productId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (res.ok) location.reload();
-      else alert(data.mensaje || 'Error al eliminar producto');
-    } catch (err) {
-      alert('Error al eliminar producto del carrito');
+    async function removeProduct(cid, pid) {
+        await fetch(`/api/carts/${cid}/products/${pid}`, { method: "DELETE" });
+        alert("Producto eliminado");
+        location.reload();
     }
-  }
+
+    async function emptyCart(cid) {
+        await fetch(`/api/carts/${cid}`, { method: "DELETE" });
+        alert("Carrito vaciado");
+        location.reload();
+    }
 </script>
-</body>
-</html>

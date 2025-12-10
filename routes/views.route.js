@@ -1,66 +1,42 @@
-const express = require('express');
-const ProductModel = require('../models/Product');
-const CartModel = require('../models/Cart');
+const express = require("express");
+const Product = require("../models/Product");
+const Cart = require("../models/Cart");
+
 const router = express.Router();
 
+router.get("/", async (req, res) => {
+    const page = Number(req.query.page) || 1;
 
-router.get('/', async (req, res) => {
-  const { page = 1 } = req.query;
+    const limit = 6;
 
-  try {
-    const result = await ProductModel.paginate({}, { page, limit: 5, lean: true });
+    const products = await Product.paginate({}, { page, limit });
 
-
-    let cart = await CartModel.findOne().lean();
-    if (!cart) {
-      const newCart = await CartModel.create({ products: [] });
-      cart = newCart.toObject();
-    }
-
-    res.render('home', {
-      productos: result.docs,
-      hasNext: result.hasNextPage,
-      hasPrev: result.hasPrevPage,
-      nextPage: result.nextPage,
-      prevPage: result.prevPage,
-      cartId: cart._id 
+    res.render("home", {
+        products: products.docs,
+        page: products.page,
+        totalPages: products.totalPages,
+        hasPrevPage: products.hasPrevPage,
+        hasNextPage: products.hasNextPage,
+        prevPage: products.prevPage,
+        nextPage: products.nextPage
     });
-
-  } catch (err) {
-    res.status(500).send('Error al cargar productos');
-  }
 });
 
-
-router.get('/products/:pid', async (req, res) => {
-  try {
-    const producto = await ProductModel.findById(req.params.pid).lean();
-    if (!producto) return res.status(404).send('Producto no encontrado');
-
-
-    let cart = await CartModel.findOne().lean();
-    if (!cart) {
-      const newCart = await CartModel.create({ products: [] });
-      cart = newCart.toObject();
-    }
-
-    res.render('productDetail', { producto, cartId: cart._id });
-  } catch (err) {
-    res.status(500).send('Error al cargar el producto');
-  }
+router.get("/products/:pid", async (req, res) => {
+    const product = await Product.findById(req.params.pid);
+    res.render("productDetail", { product });
 });
 
+router.get("/carts/:cid", async (req, res) => {
+    const cart = await Cart.findById(req.params.cid).populate("products.product");
 
-router.get('/carts/:cid', async (req, res) => {
-  const cart = await CartModel.findById(req.params.cid).populate('products.product').lean();
-  if (!cart) return res.status(404).send('Carrito no encontrado');
-  res.render('cart', { productos: cart.products, _id: cart._id });
+    const total = cart.products.reduce((s, item) => s + item.product.price * item.quantity, 0);
+
+    res.render("cart", {
+        cart,
+        cartId: req.params.cid,
+        total
+    });
 });
 
 module.exports = router;
-
-
-
-
-
-

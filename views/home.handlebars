@@ -1,57 +1,118 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Lista de Productos</title>
-  <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
+<div class="container">
 
-
-<h2>Agregar nuevo producto</h2>
-<form id="addProductForm">
-  <input type="text" name="title" placeholder="Título" required>
-  <input type="text" name="description" placeholder="Descripción">
-  <input type="text" name="code" placeholder="Código" required>
-  <input type="number" name="price" placeholder="Precio" required>
-  <input type="number" name="stock" placeholder="Stock">
-  <input type="text" name="category" placeholder="Categoría">
-  <button type="submit">Agregar Producto</button>
-</form>
+    <h1 class="title">Lista de Productos</h1>
+    <link rel="stylesheet" href="/css/style.css">
 
 
 
-<h1>Lista de Productos</h1>
-<div id="productsContainer">
-  {{#each productos}}
-    <div class="product-card">
-      <h3>{{this.title}}</h3>
-      <p>Precio: ${{this.price}}</p>
-      <p>Categoría: {{this.category}}</p>
-      <a href="/products/{{this._id}}">Ver detalle</a>
-      <button onclick="agregarAlCarrito('{{this._id}}')">Agregar al carrito</button>
+    <div class="card add-product-card">
+        <h2>Agregar nuevo producto</h2>
+
+        <form id="addProductForm" class="form-grid">
+            <input type="text" name="title" placeholder="Título" required>
+            <input type="text" name="description" placeholder="Descripción">
+            <input type="text" name="code" placeholder="Código" required>
+            <input type="number" name="price" placeholder="Precio" required>
+            <input type="number" name="stock" placeholder="Stock">
+            <input type="text" name="category" placeholder="Categoría">
+            <button type="submit" class="btn-add">Agregar Producto</button>
+        </form>
     </div>
-  {{/each}}
-</div>
 
-<div>
-  {{#if hasPrev}}<a href="/?page={{prevPage}}">Anterior</a>{{/if}}
-  {{#if hasNext}}<a href="/?page={{nextPage}}">Siguiente</a>{{/if}}
+    <hr>
+
+
+    <div class="products-grid">
+        {{#each products}}
+        <div class="card product-card">
+            <h3>{{this.title}}</h3>
+            <p><strong>Precio:</strong> ${{this.price}}</p>
+            <p><strong>Categoría:</strong> {{this.category}}</p>
+
+            <a class="btn-link" href="/products/{{this._id}}">Ver detalle</a>
+
+            <button class="btn-green" onclick="addToCart('{{this._id}}')">
+                Agregar al carrito
+            </button>
+        </div>
+        {{/each}}
+    </div>
+
+
+
+<a href="#" class="page-btn" onclick="openCart()">🛒 Ver carrito</a>
+
+<script>
+function openCart() {
+    const cid = localStorage.getItem("cartId");
+
+    if (!cid) {
+        alert("Todavía no tenés productos en el carrito");
+        return;
+    }
+
+    window.location.href = `/carts/${cid}`;
+}
+</script>
+
+
+
+    <div class="pagination">
+        {{#if hasPrevPage}}
+        <a class="page-btn" href="/?page={{prevPage}}">⬅ Anterior</a>
+        {{/if}}
+
+        <span>Página {{page}} de {{totalPages}}</span>
+
+        {{#if hasNextPage}}
+        <a class="page-btn" href="/?page={{nextPage}}">Siguiente ➡</a>
+        {{/if}}
+    </div>
 </div>
 
 <script>
-  const cartId = '{{cartId}}';
 
-  async function agregarAlCarrito(productId) {
-    try {
-      const res = await fetch(`/api/carts/${cartId}/products/${productId}`, { method: 'POST' });
-      const data = await res.json();
-      if (res.ok) alert('Producto agregado al carrito');
-      else alert(data.mensaje || 'Error al agregar');
-    } catch (err) {
-      alert('Error al agregar producto al carrito');
+    const form = document.getElementById('addProductForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = Object.fromEntries(new FormData(form));
+
+        const res = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+        });
+
+        if (res.ok) {
+            alert("Producto agregado correctamente");
+            location.reload();
+        } else {
+            alert("Error al agregar producto");
+        }
+    });
+
+
+    async function addToCart(pid) {
+
+        const cartId = localStorage.getItem("cartId");
+
+        let cid;
+
+        if (!cartId) {
+
+            const res = await fetch('/api/carts', { method: "POST" });
+            const data = await res.json();
+            cid = data._id;
+            localStorage.setItem("cartId", cid);
+        } else {
+            cid = cartId;
+        }
+
+        await fetch(`/api/carts/${cid}/products/${pid}`, {
+            method: "POST"
+        });
+
+        alert("Producto agregado al carrito!");
     }
-  }
 </script>
-</body>
-</html>
