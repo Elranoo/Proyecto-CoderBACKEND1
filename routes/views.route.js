@@ -10,6 +10,8 @@ router.get("/", async (req, res) => {
     const limit = 6;
 
     const products = await Product.paginate({}, { page, limit });
+    
+    console.log("PRODUCTOS ENCONTRADOS:", products.docs); // ← AÑADIR ESTO
 
     res.render("home", {
         products: products.docs,

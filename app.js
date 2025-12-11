@@ -12,16 +12,16 @@ const app = express();
 
 
 app.engine('handlebars', engine({
-  defaultLayout: false,
-  helpers: {
-    multiply: (a, b) => a * b,
-    calcularTotal: (productos) => {
-      return productos.reduce((acc, p) => acc + (p.product.price * p.quantity), 0);
+    defaultLayout: false,
+    runtimeOptions: {
+        allowProtoPropertiesByDefault: true,
+        allowProtoMethodsByDefault: true
     }
-  }
 }));
+
 app.set('view engine', 'handlebars');
 app.set('views', path.join(__dirname, 'views'));
+
 
 
 app.use(express.json());
